@@ -1,0 +1,14 @@
+﻿{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "AetherCore",
+  "classifications": [ "DB", "DataAccess", "Repository", "Service" ],
+  "identity": "AetherCore.Template",
+  "name": "Add AetherCore Framework",
+  "shortName": "aethercore-fw",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "TEMPLATE_NAME",
+  "preferNameDirectory": false
+}

@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="FrameworkTemplate\.template.config\template.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AetherCore\AetherCore.csproj" />
+  </ItemGroup>
+
+</Project>

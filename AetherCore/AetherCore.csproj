@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSource>false</IncludeSource>
+  </PropertyGroup>
+
+  <PropertyGroup>
+
+    <!-- 基本資訊 -->
+    <PackageId>AetherCore</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Asail</Authors>
+    <Company>Asail Studio</Company>
+
+    <!-- 套件說明 -->
+    <Description>
+      AetherCore is a modular and scalable backend framework built on .NET 8,
+      designed with clean layered architecture (Controller, Service, Repository, DataAccess).
+      It provides dependency injection helpers, standardized exception handling,
+      infrastructure abstractions, and extensibility for enterprise applications.
+    </Description>
+
+    <!-- 額外推薦 -->
+    <PackageTags>dotnet;backend;framework;architecture;modular;dependency-injection</PackageTags>
+
+    <!-- Git repo -->
+    <RepositoryUrl>https://github.com/onlydemo0712-netizen/RealtimeTalkProxyServer</RepositoryUrl>
+
+    <!-- license -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+  </PropertyGroup>
+
+
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
+    <PackageReference Include="MailKit" Version="4.14.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.21" />
+    <PackageReference Include="MongoDB.Driver" Version="3.5.0" />
+    <PackageReference Include="MongoDB.Entities" Version="24.1.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+</Project>
