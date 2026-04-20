@@ -135,8 +135,7 @@ namespace AetherCore.DataAccess
         // 使用 Lambda 表達式查詢
         public virtual async Task<List<TEntity>?> QueryAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            // 會炸掉
-            var documentPredicate   = _mapper.Map<Expression<Func<TDocument, bool>>>(predicate);
+            var documentPredicate   = ExpressionTypeMapper.MapPredicate<TEntity, TDocument>(predicate);
             var docs                = await DB.Find<TDocument>().Match(documentPredicate).ExecuteAsync();
             var entities            = await Task.WhenAll(docs.Select(doc => MapToEntity(doc, _mapper)));
             return entities.ToList();
@@ -217,6 +216,7 @@ namespace AetherCore.DataAccess
 
             return await MapToEntity(doc, _mapper);
         }
+
     }
 
     // OneReference Helper：處理 MongoDB.Entities 的 One<T> reference

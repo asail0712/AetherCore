@@ -2,6 +2,7 @@
 using AetherCore.Repository;                   // 定義了 IRepository 介面
 using AutoMapper;                         // 用於物件映射（TRequest ⇔ TEntity ⇔ TResponse）
 using AetherCore.Utility.Lincense;
+using System.Linq.Expressions;
 
 namespace AetherCore.Service
 {
@@ -67,6 +68,17 @@ namespace AetherCore.Service
         public async Task<bool> IsExists(List<string> idList)
         {
             return await _repository.ExistsAsync(idList);
+        }
+
+        protected virtual Task<List<TEntity>?> QueryEntitiesAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return _repository.GetAsync(predicate);
+        }
+
+        protected virtual async Task<List<TResponse>> QueryResponsesAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            var entities = await _repository.GetAsync(predicate) ?? new List<TEntity>();
+            return _mapper.Map<List<TResponse>>(entities);
         }
     }
 }
