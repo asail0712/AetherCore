@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using System.Linq.Expressions;
 using AetherCore.DTO;
 using AetherCore.Entities;
+using AetherCore.Utility;
 
 namespace AetherCore.Repository
 {
@@ -24,6 +25,11 @@ namespace AetherCore.Repository
         // 更新指定 Key 的資料
         Task<bool> UpdateAsync(string key, TEntity entity);
 
+        // 使用條件式更新多個欄位
+        Task<bool> UpdateAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            params UpdateField<TEntity>[] updates);
+
         // 刪除指定 Key 的資料
         Task DeleteAsync(string key);
 
@@ -41,5 +47,8 @@ namespace AetherCore.Repository
 
         // 使用條件式查詢符合條件的資料
         Task<List<TEntity>?> GetAsync(Expression<Func<TEntity, bool>> predicate);
+
+        // 使用條件式查詢符合條件的資料
+        Task<List<TEntity>?> QueryAsync(Expression<Func<TEntity, bool>> predicate);
     }
 }

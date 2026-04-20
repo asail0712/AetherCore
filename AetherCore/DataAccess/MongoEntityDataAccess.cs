@@ -6,6 +6,8 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Entities;
 using System.Linq.Expressions;
+using System.Reflection;
+using AetherCore.Utility;
 
 namespace AetherCore.DataAccess
 {
@@ -141,6 +143,36 @@ namespace AetherCore.DataAccess
             return entities.ToList();
         }
 
+        // 使用 Lambda 條件更新多個欄位
+        public virtual async Task<bool> UpdateAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            params UpdateField<TEntity>[] updates)
+        {
+            if (updates == null || updates.Length == 0)
+            {
+                return false;
+            }
+
+            var documentPredicate = ExpressionTypeMapper.MapPredicate<TEntity, TDocument>(predicate);
+            var updateDefinitions = new List<UpdateDefinition<TDocument>>();
+
+            foreach (var update in updates)
+            {
+                ValidateUpdatableField(update.FieldSelector);
+
+                var documentFieldSelector = MapDocumentFieldSelector(update.FieldSelector);
+                updateDefinitions.Add(CreateSetUpdateDefinition(documentFieldSelector, update.Value));
+            }
+
+            updateDefinitions.Add(Builders<TDocument>.Update.Set(x => x.UpdatedAt, DateTime.UtcNow));
+
+            var filter = Builders<TDocument>.Filter.Where(documentPredicate);
+            var result = await DB.Collection<TDocument>()
+                .UpdateManyAsync(filter, Builders<TDocument>.Update.Combine(updateDefinitions));
+
+            return result.MatchedCount > 0;
+        }
+
         // 根據 key 更新實體，排除不更新欄位
         public virtual async Task<bool> UpdateAsync(string key, TEntity entity)
         {
@@ -215,6 +247,56 @@ namespace AetherCore.DataAccess
             }
 
             return await MapToEntity(doc, _mapper);
+        }
+
+        private void ValidateUpdatableField(LambdaExpression fieldSelector)
+        {
+            var sourceMemberName = GetSelectedMemberName(fieldSelector);
+            var excludedFields = new HashSet<string>(
+                new[] { "Id", "_id", "CreatedAt", _searchFieldName, nameof(IDBEntity.CreatedAt) }
+                .Concat(_noUpdateList ?? Enumerable.Empty<string>()),
+                StringComparer.OrdinalIgnoreCase
+            );
+
+            if (excludedFields.Contains(sourceMemberName))
+            {
+                throw new InvalidOperationException($"Field '{sourceMemberName}' is not allowed to be updated.");
+            }
+        }
+
+        private static string GetSelectedMemberName(LambdaExpression fieldSelector)
+        {
+            return fieldSelector.Body switch
+            {
+                MemberExpression memberExpression => memberExpression.Member.Name,
+                UnaryExpression { Operand: MemberExpression memberExpression } => memberExpression.Member.Name,
+                _ => throw new NotSupportedException("Only direct member access expressions are supported.")
+            };
+        }
+
+        private static LambdaExpression MapDocumentFieldSelector(LambdaExpression fieldSelector)
+        {
+            var mapMethod = typeof(ExpressionTypeMapper)
+                .GetMethod(nameof(ExpressionTypeMapper.MapMemberSelector), BindingFlags.Public | BindingFlags.Static)!
+                .MakeGenericMethod(typeof(TEntity), typeof(TDocument), fieldSelector.ReturnType);
+
+            return (LambdaExpression)mapMethod.Invoke(null, new object[] { fieldSelector })!;
+        }
+
+        private static UpdateDefinition<TDocument> CreateSetUpdateDefinition(LambdaExpression fieldSelector, object? value)
+        {
+            var method = typeof(MongoEntityDataAccess<TEntity, TDocument>)
+                .GetMethod(nameof(BuildSetUpdateDefinition), BindingFlags.NonPublic | BindingFlags.Static)!
+                .MakeGenericMethod(fieldSelector.ReturnType);
+
+            return (UpdateDefinition<TDocument>)method.Invoke(null, new object?[] { fieldSelector, value })!;
+        }
+
+        private static UpdateDefinition<TDocument> BuildSetUpdateDefinition<TField>(
+            Expression<Func<TDocument, TField>> fieldSelector,
+            TField value)
+        {
+            return Builders<TDocument>.Update.Set(fieldSelector, value);
         }
 
     }

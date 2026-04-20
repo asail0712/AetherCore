@@ -69,16 +69,5 @@ namespace AetherCore.Service
         {
             return await _repository.ExistsAsync(idList);
         }
-
-        protected virtual Task<List<TEntity>?> QueryEntitiesAsync(Expression<Func<TEntity, bool>> predicate)
-        {
-            return _repository.GetAsync(predicate);
-        }
-
-        protected virtual async Task<List<TResponse>> QueryResponsesAsync(Expression<Func<TEntity, bool>> predicate)
-        {
-            var entities = await _repository.GetAsync(predicate) ?? new List<TEntity>();
-            return _mapper.Map<List<TResponse>>(entities);
-        }
     }
 }

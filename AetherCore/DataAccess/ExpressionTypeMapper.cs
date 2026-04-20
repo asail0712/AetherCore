@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 
 namespace AetherCore.DataAccess
@@ -9,11 +9,22 @@ namespace AetherCore.DataAccess
             Expression<Func<TSource, bool>> predicate)
         {
             var targetParameter = Expression.Parameter(typeof(TDestination), predicate.Parameters[0].Name);
-            var visitor = new MemberAccessVisitor(predicate.Parameters[0], targetParameter);
-            var body = visitor.Visit(predicate.Body)
+            var visitor         = new MemberAccessVisitor(predicate.Parameters[0], targetParameter);
+            var body            = visitor.Visit(predicate.Body)
                 ?? throw new InvalidOperationException("Predicate mapping failed.");
 
             return Expression.Lambda<Func<TDestination, bool>>(body, targetParameter);
+        }
+
+        public static Expression<Func<TDestination, TMember>> MapMemberSelector<TSource, TDestination, TMember>(
+            Expression<Func<TSource, TMember>> selector)
+        {
+            var targetParameter = Expression.Parameter(typeof(TDestination), selector.Parameters[0].Name);
+            var visitor         = new MemberAccessVisitor(selector.Parameters[0], targetParameter);
+            var body            = visitor.Visit(selector.Body)
+                ?? throw new InvalidOperationException("Member selector mapping failed.");
+
+            return Expression.Lambda<Func<TDestination, TMember>>(body, targetParameter);
         }
 
         private sealed class MemberAccessVisitor : ExpressionVisitor

@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using System.Linq.Expressions;
 using AetherCore.DTO;
 using AetherCore.Entities;
+using AetherCore.Utility;
 
 namespace AetherCore.DataAccess
 {
@@ -25,6 +26,11 @@ namespace AetherCore.DataAccess
 
         // 透過主鍵更新資料
         Task<bool> UpdateAsync(string key, TEntity entity);
+
+        // 透過條件式更新多個欄位
+        Task<bool> UpdateAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            params UpdateField<TEntity>[] updates);
 
         // 透過主鍵刪除資料
         Task<bool> DeleteAsync(string key);

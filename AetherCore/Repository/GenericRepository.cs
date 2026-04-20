@@ -7,6 +7,7 @@ using AetherCore.Entities;
 using AetherCore.Exceptions;
 using AetherCore.Utility.Caches;
 using AetherCore.Utility.Lincense;
+using AetherCore.Utility;
 
 namespace AetherCore.Repository
 {
@@ -222,6 +223,12 @@ namespace AetherCore.Repository
             return await _dataAccess.QueryAsync(predicate);
         }
 
+        // 使用 LINQ 條件式查詢
+        public virtual async Task<List<TEntity>?> QueryAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await _dataAccess.QueryAsync(predicate);
+        }
+
         // 用時間篩選查詢建立時間區間內的資料
         public virtual async Task<List<TEntity>> GetByTimeAsync(DateTime? startTime = null, DateTime? endTime = null)
         {
@@ -286,6 +293,32 @@ namespace AetherCore.Repository
             catch (Exception ex)
             {
                 throw new DatabaseOperationException("Update", typeof(TEntity).Name, ex);
+            }
+        }
+
+        public virtual async Task<bool> UpdateAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            params UpdateField<TEntity>[] updates)
+        {
+            try
+            {
+                bool bResult = await _dataAccess.UpdateAsync(predicate, updates);
+
+                if (bResult)
+                {
+                    _cache.Remove($"{_cachePrefix}:all");
+                    _cache.Remove($"{_cachePrefix}:findLast");
+                }
+
+                return bResult;
+            }
+            catch (CustomException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseOperationException("Update(Expression[])", typeof(TEntity).Name, ex);
             }
         }
 
