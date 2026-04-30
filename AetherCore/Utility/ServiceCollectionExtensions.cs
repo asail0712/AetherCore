@@ -4,6 +4,7 @@ using AetherCore.Utility.Databases;
 using AetherCore.Utility.Exceptions;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -56,6 +57,22 @@ namespace AetherCore.Utility
             });
 
             services.AddSingleton<IMongoDbContext, MongoDBContext>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// 初始化 SQL DB 設定與 EF Core DbContext。
+        /// 實際 provider 請在 optionsAction 內指定，例如 UseSqlServer、UseMySql、UseNpgsql。
+        /// </summary>
+        public static IServiceCollection InitialSqlDB<TDbContext>(
+            this IServiceCollection services,
+            IConfiguration configuration,
+            Action<IServiceProvider, DbContextOptionsBuilder> optionsAction)
+            where TDbContext : DbContext
+        {
+            services.Configure<SqlDBSettings>(configuration.GetSection("SqlDBSettings"));
+            services.AddDbContext<TDbContext>(optionsAction);
 
             return services;
         }
